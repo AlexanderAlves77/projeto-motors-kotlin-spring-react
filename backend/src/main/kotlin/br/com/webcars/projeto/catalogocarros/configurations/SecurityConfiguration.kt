@@ -21,6 +21,7 @@ class SecurityConfiguration : WebSecurityConfigurerAdapter() {
         http.csrf().disable().authorizeRequests()
             .antMatchers(HttpMethod.GET, "/").permitAll()
             .antMatchers(HttpMethod.POST, "/api/login").permitAll()
+            .antMatchers(HttpMethod.POST, "/api/usuario").permitAll()
             .anyRequest().authenticated()
         http.addFilter(JWTAutorizadorFilter(authenticationManager(), jwtUtils))
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
