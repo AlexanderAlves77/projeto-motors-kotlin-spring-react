@@ -2,6 +2,8 @@ package br.com.webcars.projeto.catalogocarros.controllers
 
 import br.com.webcars.projeto.catalogocarros.dtos.ErroDTO
 import br.com.webcars.projeto.catalogocarros.dtos.SucessoDTO
+import br.com.webcars.projeto.catalogocarros.extensions.md5
+import br.com.webcars.projeto.catalogocarros.extensions.toHex
 import br.com.webcars.projeto.catalogocarros.models.Usuario
 import br.com.webcars.projeto.catalogocarros.repositories.UsuarioRepository
 import org.springframework.http.HttpStatus
@@ -38,10 +40,15 @@ class UsuarioController(val usuarioRepository: UsuarioRepository) {
                 erros.add("Senha inválido")
             }
 
+            if(usuarioRepository.findByEmail(usuario.email) != null){
+                erros.add("Já existe usuário com o email informado.")
+            }
+
             if(erros.size > 0) {
                 return ResponseEntity(ErroDTO(HttpStatus.BAD_REQUEST.value(), null, erros), HttpStatus.BAD_REQUEST)
             }
 
+            usuario.senha = md5(usuario.senha).toHex()
             usuarioRepository.save(usuario)
 
             return ResponseEntity(SucessoDTO("Usuário criado com sucesso."), HttpStatus.OK)

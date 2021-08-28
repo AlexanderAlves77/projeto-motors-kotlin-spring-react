@@ -1,6 +1,7 @@
 package br.com.webcars.projeto.catalogocarros.configurations
 
 import br.com.webcars.projeto.catalogocarros.filters.JWTAutorizadorFilter
+import br.com.webcars.projeto.catalogocarros.repositories.UsuarioRepository
 import br.com.webcars.projeto.catalogocarros.utils.JWTUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Configuration
@@ -17,13 +18,17 @@ class SecurityConfiguration : WebSecurityConfigurerAdapter() {
     @Autowired
     private lateinit var jwtUtils: JWTUtils
 
+    @Autowired
+    private lateinit var usuarioRepository: UsuarioRepository
+
     override fun configure(http: HttpSecurity) {
         http.csrf().disable().authorizeRequests()
             .antMatchers(HttpMethod.GET, "/").permitAll()
             .antMatchers(HttpMethod.POST, "/api/login").permitAll()
             .antMatchers(HttpMethod.POST, "/api/usuario").permitAll()
             .anyRequest().authenticated()
-        http.addFilter(JWTAutorizadorFilter(authenticationManager(), jwtUtils))
+        
+        http.addFilter(JWTAutorizadorFilter(authenticationManager(), jwtUtils, usuarioRepository))
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
     }
 }
