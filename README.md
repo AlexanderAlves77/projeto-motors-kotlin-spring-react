@@ -1,4 +1,4 @@
-# Desenvolvimento de um sistema com um catálogo de veículos à venda.
+# Sistema de um catálogo de veículos à venda.
 
 ## Tecnologias usadas
 
