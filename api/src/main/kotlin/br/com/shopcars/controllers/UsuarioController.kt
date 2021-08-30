@@ -2,6 +2,8 @@ package br.com.shopcars.controllers
 
 import br.com.shopcars.dtos.ErroDTO
 import br.com.shopcars.dtos.SucessoDTO
+import br.com.shopcars.extensions.md5
+import br.com.shopcars.extensions.toHex
 import br.com.shopcars.models.Usuario
 import br.com.shopcars.repositories.UsuarioRepository
 import org.springframework.http.HttpStatus
@@ -37,11 +39,16 @@ class UsuarioController(val usuarioRepository: UsuarioRepository) {
                 erros.add("Senha inválido")
             }
 
+            if(usuarioRepository.findByEmail(usuario.email) != null){
+                erros.add("Já existe usuário com o email informado")
+            }
+
             if(erros.size > 0) {
                 return ResponseEntity(ErroDTO(HttpStatus.BAD_REQUEST.value(), null, erros),
                     HttpStatus.BAD_REQUEST)
             }
 
+            usuario.senha = md5(usuario.senha).toHex()
             usuarioRepository.save(usuario)
 
             return ResponseEntity(SucessoDTO("Usuário criado com sucesso"), HttpStatus.OK)

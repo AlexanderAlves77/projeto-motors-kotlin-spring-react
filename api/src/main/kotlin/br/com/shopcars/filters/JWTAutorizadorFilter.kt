@@ -3,8 +3,9 @@ package br.com.shopcars.filters
 import br.com.shopcars.authorization
 import br.com.shopcars.bearer
 import br.com.shopcars.impl.UsuarioDetalheImpl
-import br.com.shopcars.models.Usuario
+import br.com.shopcars.repositories.UsuarioRepository
 import br.com.shopcars.utils.JWTUtils
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
@@ -14,7 +15,11 @@ import javax.servlet.FilterChain
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-class JWTAutorizadorFilter(authenticationManager: AuthenticationManager, val jwtUtils: JWTUtils)
+class JWTAutorizadorFilter(
+    authenticationManager: AuthenticationManager,
+    val jwtUtils: JWTUtils,
+    val usuarioRepository: UsuarioRepository
+)
     : BasicAuthenticationFilter(authenticationManager) {
 
     override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, chain: FilterChain) {
@@ -33,7 +38,7 @@ class JWTAutorizadorFilter(authenticationManager: AuthenticationManager, val jwt
         if(jwtUtils.isTokenValido(token)){
             val idString = jwtUtils.getUsuarioId(token)
             if(!idString.isNullOrEmpty() && !idString.isNullOrBlank()) {
-                val usuario = Usuario(idString.toLong(), "Usuario Teste", "admin@admin.com", "Admin1234@")
+                val usuario = usuarioRepository.findByIdOrNull(idString.toLong()) ?: throw UsernameNotFoundException("Usuário não encontrado")
                 val usuarioImpl = UsuarioDetalheImpl(usuario)
                 return UsernamePasswordAuthenticationToken(usuarioImpl, null, usuarioImpl.authorities)
             }
