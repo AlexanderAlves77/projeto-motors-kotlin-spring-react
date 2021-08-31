@@ -31,8 +31,34 @@
     }
   }
 
+  .filtrosMobile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+
+    div {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      padding-bottom: 8px;
+
+      label {
+        color: $primaryColor;
+        font-size: 16px;
+        min-width: 110px;
+        margin-bottom: 0px;
+      }
+    }
+  }
+
   @media screen and (min-width: 992px) {
     padding: 20px;
+
+    .filtrosMobile {
+      display: none;
+    }
 
     .title {
       img {
