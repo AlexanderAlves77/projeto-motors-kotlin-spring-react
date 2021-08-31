@@ -1,9 +1,17 @@
 import React from 'react';
+import { Header } from '../assets/componentes/Header';
 
 export const Home = props => {
+  const sair = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('usuarioNome');
+    localStorage.removeItem('usuarioEmail');
+    props.setAccessToken('');
+  };
+
   return (
-    <div>
-      <h1>Gerenciador de tarefas - Devaria</h1>
-    </div>
+    <>
+      <Header sair={sair} />
+    </>
   );
 };
