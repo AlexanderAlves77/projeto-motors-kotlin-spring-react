@@ -20,5 +20,5 @@ interface TarefaRepository : JpaRepository<Tarefa, Long> {
         periodoDe: LocalDate?,
         periodoAte: LocalDate?,
         status: Int
-    ) : List<Tarefa>
+    ) : List<Tarefa>?
 }
