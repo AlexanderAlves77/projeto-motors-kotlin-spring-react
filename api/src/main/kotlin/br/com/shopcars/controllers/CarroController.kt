@@ -2,8 +2,8 @@ package br.com.shopcars.controllers
 
 import br.com.shopcars.dtos.ErroDTO
 import br.com.shopcars.dtos.SucessoDTO
-import br.com.shopcars.models.Tarefa
-import br.com.shopcars.repositories.TarefaRepository
+import br.com.shopcars.models.Carro
+import br.com.shopcars.repositories.CarroRepository
 import br.com.shopcars.repositories.UsuarioRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
@@ -13,41 +13,19 @@ import java.time.LocalDate
 import java.util.*
 
 @RestController
-@RequestMapping("/api/tarefa")
-class TarefaController(
+@RequestMapping("/api/carro")
+class CarroController(
     usuarioRepository: UsuarioRepository,
-    val tarefaRepository: TarefaRepository
+    val carroRepository: CarroRepository
 ) : BaseController(usuarioRepository) {
 
     @GetMapping
-    fun ListaTarefasUsuario(
-        @RequestHeader("Authorization") authorization: String,
-        @RequestParam periodoDe : Optional<String>,
-        @RequestParam periodoAte: Optional<String>,
-        @RequestParam status: Optional<Int> ) : ResponseEntity<Any> {
+    fun ListaCarro() : ResponseEntity<Any> {
 
         try{
-            val usuario = lerToken(authorization)
 
-            var periodoDeDt = if(periodoDe.isPresent && !periodoDe.get().isNotEmpty()){
-                LocalDate.parse(periodoDe.get())
-            } else {
-                null
-            }
 
-            var periodoAteDt = if(periodoAte.isPresent && !periodoAte.get().isNotEmpty()){
-                LocalDate.parse(periodoAte.get())
-            } else {
-                null
-            }
-
-            var statusInt = if(status.isPresent){
-                status.get()
-            } else {
-                0
-            }
-
-            val resultado = tarefaRepository.findByUsuarioWithFilter(usuario.id, periodoDeDt, periodoAteDt, statusInt)
+            val resultado = carroRepository.findByUsuarioWithFilter(usuario.id, periodoDeDt, periodoAteDt, statusInt)
 
             return ResponseEntity(resultado, HttpStatus.OK)
         } catch (e: Exception){
@@ -58,7 +36,7 @@ class TarefaController(
     }
 
     @PostMapping
-    fun AdicionarTarefa(@RequestBody req: Tarefa, @RequestHeader("Authorization") authorization: String) : ResponseEntity<Any> {
+    fun AdicionarCarro(@RequestBody req: Carro, @RequestHeader("Authorization") authorization: String) : ResponseEntity<Any> {
         try{
             var usuario = lerToken(authorization)
             var erros = mutableListOf<String>()
@@ -80,58 +58,58 @@ class TarefaController(
                     HttpStatus.BAD_REQUEST)
             }
 
-            var tarefa = Tarefa(
+            var carro = Carro(
                 nome = req.nome,
                 dataPrevistaConclusao = req.dataPrevistaConclusao,
                 usuario = usuario
             )
 
-            tarefaRepository.save(tarefa)
+            carroRepository.save(carro)
 
-            return ResponseEntity(SucessoDTO("Tarefa adicionada com sucesso."), HttpStatus.OK)
+            return ResponseEntity(SucessoDTO("Carro adicionada com sucesso."), HttpStatus.OK)
         } catch (e: Exception) {
             return ResponseEntity(ErroDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "Não foipossível adicionar tarefa, tente novamente."),
+                "Não foipossível adicionar carro, tente novamente."),
                 HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
 
     @DeleteMapping("/{id}")
-    fun DeletarTarefa(@PathVariable id: Long, @RequestHeader("Authorization") authorization: String) : ResponseEntity<Any> {
+    fun DeletarCarro(@PathVariable id: Long, @RequestHeader("Authorization") authorization: String) : ResponseEntity<Any> {
         try{
             val usuario = lerToken(authorization)
-            val tarefa = tarefaRepository.findByIdOrNull(id)
+            val carro = carroRepository.findByIdOrNull(id)
 
-            if(tarefa == null || tarefa.usuario?.id != usuario.id) {
+            if(carro == null || carro.usuario?.id != usuario.id) {
                 return ResponseEntity(ErroDTO(HttpStatus.BAD_REQUEST.value(),
-                    "tarefa informada não existe"), HttpStatus.BAD_REQUEST)
+                    "carro informado não existe"), HttpStatus.BAD_REQUEST)
             }
 
-            tarefaRepository.delete(tarefa)
+            carroRepository.delete(carro)
 
-            return ResponseEntity(SucessoDTO("Tarefa deletada com sucesso"), HttpStatus.OK)
+            return ResponseEntity(SucessoDTO("Carro deletado com sucesso"), HttpStatus.OK)
         } catch(e: Exception) {
             return ResponseEntity(ErroDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "Não foi possível deletar tarefa, tente novamente."),
+                "Não foi possível deletar este carro, tente novamente."),
                 HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
 
     @PutMapping("/{id}")
-    fun atualizarTarefa(
+    fun atualizarCarro(
         @PathVariable id: Long,
-        @RequestBody updateModel: Tarefa,
+        @RequestBody updateModel: Carro,
         @RequestHeader authorization: String) : ResponseEntity<Any> {
 
         try{
             var usuario = lerToken(authorization)
-            var tarefa = tarefaRepository.findByIdOrNull(id)
+            var carro = carroRepository.findByIdOrNull(id)
 
             var erros = mutableListOf<String>()
 
-            if(usuario == null || tarefa == null){
+            if(usuario == null || carro == null){
                 return ResponseEntity(ErroDTO(HttpStatus.BAD_REQUEST.value(),
-                    "Tarefa informada não existe"),HttpStatus.BAD_REQUEST)
+                    "Carro informado não existe"),HttpStatus.BAD_REQUEST)
             }
 
             if(updateModel == null){
@@ -154,24 +132,24 @@ class TarefaController(
             }
 
             if(updateModel.nome.isNullOrEmpty() && updateModel.nome.isNullOrEmpty()) {
-                tarefa.nome = updateModel.nome
+                carro.nome = updateModel.nome
             }
 
             if(updateModel.dataPrevistaConclusao.isBefore(LocalDate.now())){
-                tarefa.dataPrevistaConclusao = updateModel.dataPrevistaConclusao
+                carro.dataPrevistaConclusao = updateModel.dataPrevistaConclusao
             }
 
             if(updateModel.dataConclusao != null && updateModel.dataConclusao != LocalDate.MIN) {
-                tarefa.dataConclusao = updateModel.dataConclusao
+                carro.dataConclusao = updateModel.dataConclusao
             }
 
-            tarefaRepository.save(tarefa)
+            carroRepository.save(carro)
 
-            return ResponseEntity(SucessoDTO("Tarefa atualizada com sucesso"), HttpStatus.OK)
+            return ResponseEntity(SucessoDTO("Carro atualizado com sucesso"), HttpStatus.OK)
 
         } catch (e: Exception) {
             return ResponseEntity(ErroDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(),
-            "Não foi possível atualizar a tarefa, tente novamente"),
+            "Não foi possível atualizar, tente novamente"),
                 HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }

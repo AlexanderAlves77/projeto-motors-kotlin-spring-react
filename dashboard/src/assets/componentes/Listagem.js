@@ -18,6 +18,17 @@ export const Listagem = props => {
   const [dataPrevisaoTarefa, setDataPrevisaoTarefa] = useState('');
   const [dataConclusao, setDataConclusao] = useState('');
 
+  const selecionarTarefa = tarefa => {
+    setErro('');
+    setIdTarefa(tarefa.id);
+    setNomeTarefa(tarefa.nome);
+    setDataPrevisaoTarefa(
+      moment(tarefa.dataPrevistaConclusao).format('yyyy-MM-DD')
+    );
+    setDataConclusao(tarefa.dataConclusao);
+    setShowModal(true);
+  };
+
   const atualizarTarefa = async () => {
     try {
       if (!nomeTarefa || !dataPrevisaoTarefa) {
@@ -27,7 +38,7 @@ export const Listagem = props => {
 
       const body = {
         nome: nomeTarefa,
-        dataPrevisaoConclusao: dataPrevisaoTarefa,
+        dataPrevistaConclusao: dataPrevisaoTarefa,
         dataConclusao: dataConclusao,
       };
 
@@ -47,7 +58,7 @@ export const Listagem = props => {
         setErro(e.response.data.erro);
       } else {
         setErro(
-          'Não foi possível cadastrar a tarefa, fale com o administrador.'
+          'Não foi possível atualizar a tarefa, fale com o administrador.'
         );
       }
     }
@@ -56,13 +67,14 @@ export const Listagem = props => {
   const excluirTarefa = async () => {
     try {
       if (!idTarefa) {
-        setErro('Favor informar nome e data de previsão');
+        setErro('Favor informar a tarefa a ser excluída');
         return;
       }
 
       await executaRequisicao('tarefa/' + idTarefa, 'delete');
       await getTarefasComFiltro();
 
+      setNomeTarefa('');
       setDataPrevisaoTarefa('');
       setDataConclusao('');
       setIdTarefa(null);
@@ -77,16 +89,6 @@ export const Listagem = props => {
         setErro('Não foi possível excluir a tarefa, fale com o administrador.');
       }
     }
-  };
-
-  const selecionarTarefa = tarefa => {
-    setIdTarefa(tarefa.id);
-    setNomeTarefa(tarefa.nome);
-    setDataPrevisaoTarefa(
-      moment(tarefa.dataPrevistaConclusao).format('yyyy-MM-DD')
-    );
-    setDataConclusao(tarefa.dataConclusao);
-    setShowModal(true);
   };
 
   return (
@@ -122,7 +124,7 @@ export const Listagem = props => {
           <input
             type="text"
             name="nome"
-            placeholder="Digite o nome da tarefa"
+            placeholder="Nome da tarefa"
             className="col-12"
             value={nomeTarefa}
             onChange={evt => setNomeTarefa(evt.target.value)}
@@ -130,7 +132,8 @@ export const Listagem = props => {
           <input
             type="text"
             name="dataPrevisao"
-            placeholder="Digite a data conclusão"
+            placeholder="Digite de previsão de conclusão"
+            className="col-12"
             value={dataPrevisaoTarefa}
             onChange={evt => setDataPrevisaoTarefa(evt.target.value)}
             onFocus={evt => evt.target.type === 'date'}
@@ -144,6 +147,7 @@ export const Listagem = props => {
             type="text"
             name="dataPrevisao"
             placeholder="Digite a data conclusão"
+            className="col-12"
             value={dataConclusao}
             onChange={evt => setDataConclusao(evt.target.value)}
             onFocus={evt => evt.target.type === 'date'}

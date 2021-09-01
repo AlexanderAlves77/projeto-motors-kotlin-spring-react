@@ -13,5 +13,5 @@ data class Usuario(
 
     @JsonBackReference
     @OneToMany(mappedBy = "usuario", fetch = FetchType.EAGER)
-    val tarefas: List<Tarefa> = emptyList()
+    val carros: List<Carro> = emptyList()
 )

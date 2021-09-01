@@ -1,16 +1,16 @@
 package br.com.shopcars.models
 
 import com.fasterxml.jackson.annotation.JsonBackReference
-import java.time.LocalDate
 import javax.persistence.*
 
 @Entity
-data class Tarefa (
+data class Carro (
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
     var nome: String = "",
-    var dataPrevistaConclusao: LocalDate = LocalDate.MIN,
-    var dataConclusao: LocalDate? = null,
+    var marca: String = "",
+    var modelo: String = "",
+    var foto: List<String>,
 
     @JsonBackReference
     @ManyToOne(fetch = FetchType.EAGER)

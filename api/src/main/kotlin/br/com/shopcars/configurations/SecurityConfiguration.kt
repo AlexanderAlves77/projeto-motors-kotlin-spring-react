@@ -27,6 +27,7 @@ class SecurityConfiguration : WebSecurityConfigurerAdapter() {
 
     override fun configure(http: HttpSecurity) {
         http.csrf().disable().authorizeRequests()
+            .antMatchers(HttpMethod.GET, "/api/carro").permitAll()
             .antMatchers(HttpMethod.POST, "/api/login").permitAll()
             .antMatchers(HttpMethod.POST, "/api/usuario").permitAll()
             .anyRequest().authenticated()
