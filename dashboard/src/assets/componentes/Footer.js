@@ -1,10 +1,11 @@
 import React from 'react';
 import adicionar from '../icones/adicionar.svg';
 
-export const Footer = () => {
+export const Footer = props => {
+  const { showModal } = props;
   return (
     <div className="container-footer">
-      <button>
+      <button onClick={showModal}>
         <img src={adicionar} alt="Adicionar uma tarefa" />
         Adicionar tarefa
       </button>
