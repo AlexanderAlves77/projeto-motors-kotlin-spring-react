@@ -1,24 +1,45 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+
 import { Header } from '../assets/componentes/Header';
 import { Filtros } from '../assets/componentes/Filtros';
 import { Listagem } from '../assets/componentes/Listagem';
 import { Footer } from '../assets/componentes/Footer';
+import { executaRequisicao } from '../services/api';
 
 export const Home = props => {
-  const [tarefas, setTarefas] = useState([
-    {
-      id: '123wamaks',
-      nome: 'Tarefa Mock 1',
-      dataPrevisaoConclusao: '2021-08-31',
-      dataConclusao: null,
-    },
-    {
-      id: 'wamaks123',
-      nome: 'Tarefa Mock 2',
-      dataPrevisaoConclusao: '2021-08-31',
-      dataConclusao: '2021-09-01',
-    },
-  ]);
+  // STATES DA LISTA
+  const [tarefas, setTarefas] = useState([]);
+
+  // STATES DOS FILTROS
+  const [periodoDe, setPeriodoDe] = useState('');
+  const [periodoAte, setPeriodoAte] = useState('');
+  const [status, setStatus] = useState(0);
+
+  const getTarefasComFiltro = async () => {
+    try {
+      let filtros = '?status=' + status;
+
+      if (periodoDe) {
+        filtros += '&periodoDe=' + periodoDe;
+      }
+
+      if (periodoAte) {
+        filtros += '&periodoAte=' + periodoAte;
+      }
+
+      const resultado = await executaRequisicao('tarefa' + filtros, 'get');
+
+      if (resultado && resultado.data) {
+        setTarefas(resultado.data);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  useEffect(() => {
+    getTarefasComFiltro();
+  }, [status, periodoDe, periodoAte]);
 
   const sair = () => {
     localStorage.removeItem('accessToken');
@@ -30,8 +51,15 @@ export const Home = props => {
   return (
     <>
       <Header sair={sair} />
-      <Filtros />
-      <Listagem tarefas={tarefas} />
+      <Filtros
+        periodoDe={periodoDe}
+        periodoAte={periodoAte}
+        status={status}
+        setPeriodoDe={setPeriodoDe}
+        setPeriodoAte={setPeriodoAte}
+        setStatus={setStatus}
+      />
+      <Listagem tarefas={tarefas} getTarefasComFiltro={getTarefasComFiltro} />
       <Footer />
     </>
   );
