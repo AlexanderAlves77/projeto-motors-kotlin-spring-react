@@ -115,17 +115,17 @@ class CarroController(usuarioRepository: UsuarioRepository,
                 erros.add("Favor enviar os dados que deseja atualizar")
             } else {
                 if(!updateModel.nome.isNullOrBlank() && !updateModel.nome.isNullOrEmpty()
-                    && !updateModel.nome.length < 2) {
+                    && updateModel.nome.length < 2) {
                     erros.add("Nome inválido")
                 }
 
                 if(!updateModel.marca.isNullOrBlank() && !updateModel.marca.isNullOrEmpty()
-                    && !updateModel.marca.length < 4) {
+                    && updateModel.marca.length < 4) {
                     erros.add("Marca inválido")
                 }
 
                 if(!updateModel.modelo.isNullOrBlank() && !updateModel.modelo.isNullOrEmpty()
-                    && !updateModel.modelo.length < 4) {
+                    && updateModel.modelo.length < 4) {
                     erros.add("Modelo inválido")
                 }
 
