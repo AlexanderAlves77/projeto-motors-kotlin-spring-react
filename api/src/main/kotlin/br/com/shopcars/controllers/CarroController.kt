@@ -1,7 +1,7 @@
 package br.com.shopcars.controllers
 
 import br.com.shopcars.dtos.ErroDTO
-import br.com.shopcars.dtos.SucessoDTO
+import br.com.shopcars.dtos.SuccessoDTO
 import br.com.shopcars.models.Carro
 import br.com.shopcars.repositories.CarroRepository
 import br.com.shopcars.repositories.UsuarioRepository
@@ -9,88 +9,88 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import java.time.LocalDate
 import java.util.*
 
 @RestController
 @RequestMapping("/api/carro")
-class CarroController(
-    usuarioRepository: UsuarioRepository,
-    val carroRepository: CarroRepository
-) : BaseController(usuarioRepository) {
+class CarroController(usuarioRepository: UsuarioRepository,
+                      val carroRepository: CarroRepository) : BaseController(usuarioRepository) {
 
     @GetMapping
-    fun ListaCarro() : ResponseEntity<Any> {
-
-        try{
-
-
-            val resultado = carroRepository.findByUsuarioWithFilter(usuario.id, periodoDeDt, periodoAteDt, statusInt)
-
-            return ResponseEntity(resultado, HttpStatus.OK)
-        } catch (e: Exception){
-            return ResponseEntity(ErroDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(),
-            "Não foi possível listar as atividades do usuário"),
-                HttpStatus.INTERNAL_SERVER_ERROR)
-        }
-    }
+    fun listaTodosCarros(): MutableIterable<Carro> = carroRepository.findAll()
 
     @PostMapping
-    fun AdicionarCarro(@RequestBody req: Carro, @RequestHeader("Authorization") authorization: String) : ResponseEntity<Any> {
+    fun adicionarCarro(@RequestBody car: Carro, @RequestHeader("Authorization")
+    authorization : String) : ResponseEntity<Any>{
+
         try{
             var usuario = lerToken(authorization)
             var erros = mutableListOf<String>()
 
-            if(req == null) {
-                erros.add("Tarefa não encontrada")
+            if(car == null) {
+                erros.add("Carro não encontrado")
             } else {
-                if(req.nome.isNullOrBlank() || req.nome.isNullOrEmpty() || req.nome.length < 4) {
-                    erros.add("Nome inválido")
+                if(car.nome.isNullOrBlank() || car.nome.isNullOrEmpty() || car.nome.length < 2){
+                    erros.add("Nome de carro inválido")
                 }
 
-                if (req.dataPrevistaConclusao.isBefore(LocalDate.now())) {
-                    erros.add("Data de previsão não pode ser menor que hoje")
+                if(car.marca.isNullOrBlank() || car.marca.isNullOrEmpty() || car.marca.length < 4) {
+                    erros.add("Marca de carro inválido")
+                }
+
+                if(car.modelo.isNullOrBlank() || car.modelo.isNullOrEmpty() || car.modelo.length < 4){
+                    erros.add("Modelo de carro inválido")
+                }
+
+                if(car.modelo.isNullOrBlank() || car.modelo.isNullOrEmpty()){
+                    erros.add("Foto de carro necessária")
                 }
             }
 
             if(erros.size > 0) {
-                return ResponseEntity(ErroDTO(HttpStatus.BAD_REQUEST.value(), erros = erros),
-                    HttpStatus.BAD_REQUEST)
+                return ResponseEntity(ErroDTO(HttpStatus.BAD_REQUEST.value(),
+                    erros = erros), HttpStatus.BAD_REQUEST)
             }
 
             var carro = Carro(
-                nome = req.nome,
-                dataPrevistaConclusao = req.dataPrevistaConclusao,
-                usuario = usuario
+                nome = car.nome,
+                marca = car.marca,
+                modelo = car.modelo,
+                foto = car.foto
             )
 
             carroRepository.save(carro)
 
-            return ResponseEntity(SucessoDTO("Carro adicionada com sucesso."), HttpStatus.OK)
+            return ResponseEntity(SuccessoDTO("Carro cadastrado com sucesso"), HttpStatus.OK)
+
         } catch (e: Exception) {
             return ResponseEntity(ErroDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "Não foipossível adicionar carro, tente novamente."),
+                "Não foi possível cadastrar o carro, tente novamente."),
                 HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
 
     @DeleteMapping("/{id}")
-    fun DeletarCarro(@PathVariable id: Long, @RequestHeader("Authorization") authorization: String) : ResponseEntity<Any> {
-        try{
-            val usuario = lerToken(authorization)
-            val carro = carroRepository.findByIdOrNull(id)
+    fun DeletarCarro(@PathVariable id: Long, @RequestHeader("Authorization")
+    authorization: String) : ResponseEntity<Any> {
+
+        try {
+            var usuario = lerToken(authorization)
+            var carro = carroRepository.findByIdOrNull(id)
 
             if(carro == null || carro.usuario?.id != usuario.id) {
                 return ResponseEntity(ErroDTO(HttpStatus.BAD_REQUEST.value(),
-                    "carro informado não existe"), HttpStatus.BAD_REQUEST)
+                    "Carro informado não existe"), HttpStatus.BAD_REQUEST)
             }
 
             carroRepository.delete(carro)
 
-            return ResponseEntity(SucessoDTO("Carro deletado com sucesso"), HttpStatus.OK)
-        } catch(e: Exception) {
+            return ResponseEntity(SuccessoDTO("Carro removido com sucesso"),
+                HttpStatus.OK)
+
+        } catch (exception: Exception) {
             return ResponseEntity(ErroDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "Não foi possível deletar este carro, tente novamente."),
+                "Não foi possível remover o carro, tente novamente"),
                 HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
@@ -99,58 +99,69 @@ class CarroController(
     fun atualizarCarro(
         @PathVariable id: Long,
         @RequestBody updateModel: Carro,
-        @RequestHeader authorization: String) : ResponseEntity<Any> {
+        @RequestHeader authorization: String) : ResponseEntity<Any>{
 
         try{
             var usuario = lerToken(authorization)
             var carro = carroRepository.findByIdOrNull(id)
-
             var erros = mutableListOf<String>()
 
-            if(usuario == null || carro == null){
+            if(usuario == null || carro == null) {
                 return ResponseEntity(ErroDTO(HttpStatus.BAD_REQUEST.value(),
-                    "Carro informado não existe"),HttpStatus.BAD_REQUEST)
+                    "Carro informado não existe"), HttpStatus.BAD_REQUEST)
             }
 
-            if(updateModel == null){
+            if(updateModel == null) {
                 erros.add("Favor enviar os dados que deseja atualizar")
             } else {
-                if(!updateModel.nome.isNullOrEmpty() && !updateModel.nome.isNullOrBlank()
-                    && updateModel.nome.length > 4){
+                if(!updateModel.nome.isNullOrBlank() && !updateModel.nome.isNullOrEmpty()
+                    && !updateModel.nome.length < 2) {
                     erros.add("Nome inválido")
                 }
 
-                if(updateModel.dataConclusao != null && updateModel.dataConclusao == LocalDate.MIN ){
-                    erros.add("Data de conclusão inválida")
+                if(!updateModel.marca.isNullOrBlank() && !updateModel.marca.isNullOrEmpty()
+                    && !updateModel.marca.length < 4) {
+                    erros.add("Marca inválido")
+                }
+
+                if(!updateModel.modelo.isNullOrBlank() && !updateModel.modelo.isNullOrEmpty()
+                    && !updateModel.modelo.length < 4) {
+                    erros.add("Modelo inválido")
+                }
+
+                if(!updateModel.foto.isNullOrEmpty()) {
+                    erros.add("Foto inválida")
                 }
             }
 
             if(erros.size > 0) {
-                return ResponseEntity(ErroDTO(
-                    HttpStatus.BAD_REQUEST.value(),
+                return ResponseEntity(ErroDTO(HttpStatus.BAD_REQUEST.value(),
                     erros = erros), HttpStatus.BAD_REQUEST)
             }
 
-            if(updateModel.nome.isNullOrEmpty() && updateModel.nome.isNullOrEmpty()) {
+            if(!updateModel.nome.isNullOrBlank() && !updateModel.nome.isNullOrEmpty()) {
                 carro.nome = updateModel.nome
             }
 
-            if(updateModel.dataPrevistaConclusao.isBefore(LocalDate.now())){
-                carro.dataPrevistaConclusao = updateModel.dataPrevistaConclusao
+            if(!updateModel.marca.isNullOrBlank() && !updateModel.marca.isNullOrEmpty()) {
+                carro.marca = updateModel.marca
             }
 
-            if(updateModel.dataConclusao != null && updateModel.dataConclusao != LocalDate.MIN) {
-                carro.dataConclusao = updateModel.dataConclusao
+            if(!updateModel.modelo.isNullOrBlank() && !updateModel.modelo.isNullOrEmpty()) {
+                carro.modelo = updateModel.modelo
+            }
+
+            if(!updateModel.foto.isNullOrEmpty()) {
+                carro.foto = updateModel.foto
             }
 
             carroRepository.save(carro)
 
-            return ResponseEntity(SucessoDTO("Carro atualizado com sucesso"), HttpStatus.OK)
+            return ResponseEntity(SuccessoDTO("Carro atualizado com sucesso"), HttpStatus.OK)
 
-        } catch (e: Exception) {
+        } catch (exception: Exception) {
             return ResponseEntity(ErroDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(),
-            "Não foi possível atualizar, tente novamente"),
-                HttpStatus.INTERNAL_SERVER_ERROR)
+                "Não foi possível atualizar o carro, tente novamente"), HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
 }

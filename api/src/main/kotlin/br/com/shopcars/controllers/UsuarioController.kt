@@ -1,7 +1,7 @@
 package br.com.shopcars.controllers
 
 import br.com.shopcars.dtos.ErroDTO
-import br.com.shopcars.dtos.SucessoDTO
+import br.com.shopcars.dtos.SuccessoDTO
 import br.com.shopcars.extensions.md5
 import br.com.shopcars.extensions.toHex
 import br.com.shopcars.models.Usuario
@@ -51,7 +51,7 @@ class UsuarioController(val usuarioRepository: UsuarioRepository) {
             usuario.senha = md5(usuario.senha).toHex()
             usuarioRepository.save(usuario)
 
-            return ResponseEntity(SucessoDTO("Usuário criado com sucesso"), HttpStatus.OK)
+            return ResponseEntity(SuccessoDTO("Usuário criado com sucesso"), HttpStatus.OK)
         } catch (excecao : Exception) {
             return ResponseEntity(
                 ErroDTO(

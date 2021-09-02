@@ -22,7 +22,7 @@ class JWTUtils {
 
         if(claims != null) {
             val idUsuario = claims.subject
-            if(idUsuario.isNullOrEmpty() || idUsuario.isNullOrBlank()) {
+            if(!idUsuario.isNullOrEmpty() && !idUsuario.isNullOrBlank()) {
                 return true
             }
         }
